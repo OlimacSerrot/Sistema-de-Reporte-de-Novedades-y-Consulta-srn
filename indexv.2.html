@@ -1,0 +1,1559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro de Novedades</title>
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHGQiCLgITR3yUL82VC3xsoHYK-Z1lLX-p9ATk22qUTw&s=10" type="image/x-icon" />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const originalTitle = document.title;
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) {
+          document.title = "OLIMAC-SERROT";
+        } else {
+          document.title = originalTitle;
+        }
+      });
+    });
+  </script>
+    <style>
+        :root {
+            --primary-color: #2b5a23;
+            --secondary-color: #0284c7;
+            --success-color: #22c55e;
+            --danger-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.94);
+            --text-color: #334155;
+            --border-color: #cbd5e1;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: var(--bg-color);
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHGQiCLgITR3yUL82VC3xsoHYK-Z1lLX-p9ATk22qUTw&s=10');
+            background-repeat: no-repeat;
+            background-position: center;
+            background-attachment: fixed;
+            background-size: 550px auto;
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .role-selector {
+            background-color: rgba(255,255,255,0.2);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid white;
+            color: white;
+            font-weight: bold;
+        }
+        .role-selector select {
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+        .role-selector select option { color: var(--text-color); }
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(4px);
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .search-card { border-left: 5px solid var(--secondary-color); background: rgba(238, 242, 255, 0.95); }
+        .elaborado-card { border-left: 5px solid var(--primary-color); background: rgba(241, 245, 249, 0.95); }
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 15px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; color: #475569; }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #fff;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1);
+        }
+        input:disabled, select:disabled, textarea:disabled {
+            background-color: #e2e8f0 !important;
+            cursor: not-allowed;
+            color: #334155;
+            font-weight: bold;
+        }
+        .hidden { display: none !important; }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            gap: 8px;
+        }
+        .btn-primary { background-color: var(--primary-color); color: white; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-success { background-color: var(--success-color); color: white; }
+        .btn-success:hover { background-color: #16a34a; }
+        .btn-secondary { background-color: #64748b; color: white; }
+        .btn-secondary:hover { background-color: #475569; }
+        .btn-pill {
+            background-color: #f1f5f9;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-pill:hover, .btn-pill.active {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+        }
+        .gps-box { display: flex; gap: 10px; }
+        .radio-group { display: flex; gap: 20px; align-items: center; height: 42px; }
+        .radio-group label { display: inline-flex; align-items: center; gap: 5px; margin: 0; cursor: pointer; }
+        .radio-group input { width: auto; }
+        #outputTexto {
+            background-color: #f1f5f9;
+            border-left: 4px solid var(--secondary-color);
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 13px;
+        }
+        .table-responsive { overflow-x: auto; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+        th, td { padding: 12px; border-bottom: 1px solid #e2e8f0; white-space: nowrap; }
+        th { background-color: #f1f5f9; color: var(--primary-color); font-weight: bold; }
+        tr:hover { background-color: #f8fafc; }
+        .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; }
+        .activity-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 15px;
+            background: #f8fafc;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+        }
+        .actividad-item-card {
+            background: #fdfdfd;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid var(--secondary-color);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .actividad-item-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .actividad-item-title { font-weight: bold; font-size: 13px; color: var(--primary-color); }
+        .btn-delete-act { background: none; border: none; color: var(--danger-color); cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-delete-act:hover { text-decoration: underline; }
+        .sub-card {
+            background-color: rgba(248, 250, 252, 0.9);
+            border: 1px dashed #cbd5e1;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            position: relative;
+        }
+        .seccion-dupla {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <header>
+        <div>
+             <h1>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHGQiCLgITR3yUL82VC3xsoHYK-Z1lLX-p9ATk22qUTw&s=10" alt="POLICIA" class="navbar__logo" style="width: 80px; height: auto;">             
+           S.R.N.
+            </h1>
+            <p style="font-size: 12px; opacity: 0.9;">Sistema de Reporte de Novedades y Consulta</p>
+        </div>
+        <div class="role-selector">
+            Rol Actual: 
+            <select id="userRole" onchange="switchRole()">
+                <option value="admin">Funcionario / Usuario Normal</option>
+                <option value="superadmin">Super Admin (🔒 Clave)</option>
+            </select>
+        </div>
+    </header>
+    
+    <!-- BUSCADOR -->
+    <div style="margin-bottom: 15px;">
+        <button type="button" class="btn btn-secondary" onclick="toggleBuscador()" style="width: 100%; font-size: 15px;">
+            🔍 Buscar Registros (Haga clic para desplegar/ocultar)
+        </button>
+    </div>
+    <div id="panelBuscador" class="card search-card hidden">
+        <h2>🔍 Módulo de Búsqueda de Novedades Registradas</h2>
+        <div class="grid-4">
+            <div class="form-group">
+                <label>Buscar por Placa</label>
+                <input type="text" id="buscPlaca" placeholder="Ej: ABC123">
+            </div>
+            <div class="form-group">
+                <label>Buscar por Cédula/Doc</label>
+                <input type="text" id="buscCedula" placeholder="Ej: 10123456">
+            </div>
+            <div class="form-group">
+                <label>Buscar por Consecutivo</label>
+                <input type="text" id="buscConsecutivo" placeholder="Ej: 00012026">
+            </div>
+            <div class="form-group">
+                <label>Buscar por Fecha</label>
+                <input type="date" id="buscFecha">
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="button" class="btn btn-primary" onclick="ejecutarBusqueda()">🔎 Buscar Registro</button>
+            <button type="button" class="btn btn-secondary" onclick="limpiarFormularioYModo()">🔄 Limpiar / Nuevo Registro</button>
+        </div>
+        <div id="msjBusqueda" style="margin-top: 10px; font-weight: bold; font-size: 13px;"></div>
+    </div>
+    
+    <form id="novedadForm" onsubmit="procesarFormulario(event)">
+        <!-- ELABORADO POR -->
+        <div class="card elaborado-card">
+            <h2>✍️ Elaborado Por (Datos del Funcionario)</h2>
+            <div class="grid-4">
+                <div class="form-group">
+                    <label>Número de Cédula</label>
+                    <input type="text" id="elabCedula" placeholder="Ingrese Cédula" oninput="buscarFuncionarioElab()" required>
+                </div>
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" id="elabNombre" readonly style="background-color: #f1f5f9; font-weight: bold;" placeholder="Auto-completado">
+                </div>
+                <div class="form-group">
+                    <label>Cargo / Grado</label>
+                    <input type="text" id="elabCargo" readonly style="background-color: #f1f5f9; font-weight: bold;" placeholder="Auto-completado">
+                </div>
+                <div class="form-group">
+                    <label>Dependencia</label>
+                    <input type="text" id="elabDependencia" readonly style="background-color: #f1f5f9; font-weight: bold;" placeholder="Auto-completado">
+                </div>
+            </div>
+        </div>
+        
+        <!-- 1. DATOS GENERALES -->
+        <div class="card">
+            <h2>1. Datos Generales de la Novedad</h2>
+            <div class="grid-4">
+                <div class="form-group">
+                    <label>Consecutivo <span id="lblConsecutivoEstado" style="font-size:11px; color:#22c55e;">(Automático)</span></label>
+                    <input type="text" id="consecutivo" readonly style="background-color: #f1f5f9; font-weight: bold; color: var(--primary-color);">
+                </div>
+                <div class="form-group">
+                    <label>Tipo Novedad</label>
+                    <select id="tipoNovedad" required>
+                        <option value="">-- Seleccione --</option>
+                        <option value="VIDA">VIDA</option>
+                        <option value="PATRIMONIO">PATRIMONIO</option>
+                        <option value="OPERATIVIDAD">OPERATIVIDAD</option>
+                        <option value="ACCIDENTE TRÁNSITO">ACCIDENTE TRÁNSITO</option>
+                        <option value="ORDEN PÚBLICO">ORDEN PÚBLICO</option>
+                        <option value="OTRO">OTRO</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Fecha Hecho</label>
+                    <input type="date" id="fechaHecho" onchange="calcularDiaSemana()" required>
+                </div>
+                <div class="form-group">
+                    <label>Día de la Semana</label>
+                    <input type="text" id="diaSemana" readonly style="background-color: #f1f5f9; font-weight: bold;" placeholder="Auto...">
+                </div>
+            </div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Hora Hecho</label>
+                    <input type="time" id="horaHecho" required>
+                </div>
+                <div class="form-group">
+                    <label>Comuna</label>
+                    <select id="selectComuna" onchange="actualizarBarrios()" required>
+                        <option value="">-- Seleccione Comuna --</option>
+                        <option value="COMUNA 1">Comuna 1 (Compartir)</option>
+                        <option value="COMUNA 2">Comuna 2 (Soacha Centro)</option>
+                        <option value="COMUNA 3">Comuna 3 (Leon XIII)</option>
+                        <option value="COMUNA 4">Comuna 4 (Cazucá)</option>
+                        <option value="COMUNA 5">Comuna 5 (San Mateo)</option>
+                        <option value="COMUNA 6">Comuna 6 (Chico)</option>
+                        <option value="Sibate">Sibate</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Barrio</label>
+                    <select id="selectBarrio" onchange="evaluarBarrioOtro()" required>
+                        <option value="">-- Seleccione Barrio --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group hidden" id="boxBarrioOtro">
+                <label>Escriba el nombre del Barrio / Sector</label>
+                <input type="text" id="barrioOtroInput" placeholder="Nombre completo del barrio">
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Nomenclatura / Dirección Exacta</label>
+                    <input type="text" id="nomenclatura" placeholder="Ej: Calle 26 # 13-40, Apto 201" required>
+                </div>
+                <div class="form-group">
+                    <label>Ubicación GPS (Coordenadas / Enlace Maps) <span style="color:red;">*</span></label>
+                    <div class="gps-box">
+                        <input type="text" id="gpsCoords" placeholder="Ej: 4.5801, -74.2189" required>
+                        <button type="button" class="btn btn-secondary" id="btnGpsCap" onclick="obtenerGPS()" style="padding: 10px;">📍 Capturar</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VÍCTIMAS -->
+            <div style="margin-top: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 style="font-size: 15px; color: var(--primary-color);">👤 Datos de Víctimas / Afectados (<span id="contadorVictimas">1</span>/10)</h3>
+                    <button type="button" class="btn btn-secondary" id="btnAgregarVic" onclick="agregarVictima()" style="padding: 6px 12px; font-size: 12px;">➕ Agregar Otra Víctima</button>
+                </div>
+                <div id="contenedorVictimas">
+                    <div class="sub-card victima-card" id="victima_card_1">
+                        <h4 class="victima-titulo" style="font-size: 13px; color: var(--secondary-color); margin-bottom: 10px;">Víctima #1</h4>
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label>Nombre de la Víctima</label>
+                                <input type="text" class="vic-nombre" placeholder="Nombre completo" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Documento</label>
+                                <select class="vic-tipo-doc" required>
+                                    <option value="CC">Cédula de Ciudadanía (CC)</option>
+                                    <option value="CE">Cédula de Extranjería (CE)</option>
+                                    <option value="PASAPORTE">Pasaporte</option>
+                                    <option value="TI">Tarjeta de Identidad (TI)</option>
+                                    <option value="PEP">PEP</option>
+                                    <option value="PPT">PPT</option>
+                                    <option value="NIT">NIT</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Número Documento</label>
+                                <input type="text" class="vic-doc" placeholder="Número de documento" required>
+                            </div>
+                        </div>
+                        <div class="grid-4">
+                            <div class="form-group">
+                                <label>Edad</label>
+                                <input type="number" class="vic-edad" placeholder="Ej: 25" min="0" max="120" oninput="evaluarMenorEdad(this)" required>
+                            </div>
+                            <div class="form-group">
+                                <label>¿Es Menor de Edad?</label>
+                                <select class="vic-menor" required>
+                                    <option value="NO">NO</option>
+                                    <option value="SI">SÍ</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Teléfono</label>
+                                <input type="tel" class="vic-tel" placeholder="Número de contacto" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Correo Electrónico</label>
+                                <input type="email" class="vic-correo" placeholder="correo@ejemplo.com">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2. CLASIFICACIÓN -->
+        <div class="card">
+            <h2>2. Clasificación y Detalles del Hecho</h2>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Tipo de Delito/Situación</label>
+                    <select id="tipoDelito" onchange="actualizarSubtipos()" required>
+                        <option value="">-- Seleccione --</option>
+                        <option value="HURTO">HURTO</option>                        
+                        <option value="HOMICIDIO">HOMICIDIO</option>
+                        <option value="LESIONES">LESIONES PERSONALES</option>
+                        <option value="ESTAFA">ESTAFA / FRAUDE</option>
+                        <option value="DAÑO">DAÑO EN PROPIEDAD</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Subtipo (Categoría General)</label>
+                    <select id="subtipoDelito" onchange="actualizarTipoEspecificoVehiculo()" required>
+                        <option value="">-- Primero elija Tipo --</option>
+                    </select>
+                </div>
+                <div class="form-group hidden" id="boxElementoEspecifico">
+                    <label id="lblElementoEspecifico">Elemento / Tipo Específico</label>
+                    <select id="selectElementoEspecifico" onchange="evaluarCamposVehiculo()">
+                        <option value="">-- Seleccione --</option>
+                    </select>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Modalidad</label>
+                    <select id="modalidad" required>
+                        <option value="">-- Seleccione --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Arma Empleada</label>
+                    <select id="armaEmpleada" required>
+                        <option value="SIN ARMAS">SIN ARMAS</option>
+                        <option value="ARMA DE FUEGO">ARMA DE FUEGO</option>
+                        <option value="ARMA CORTOPUNZANTE">ARMA CORTOPUNZANTE</option>
+                        <option value="ARMA CONTUNDENTE">ARMA CONTUNDENTE</option>
+                        <option value="ARMA CORTOCONTUNDENTE">ARMA CORTOCONTUNDENTE</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- SECCIÓN VEHÍCULO / MOTO / BICICLETA -->
+            <div id="camposVehiculo" class="hidden" style="background: rgba(240, 253, 244, 0.9); padding: 15px; border-radius: 6px; border: 1px solid #bbf7d0; margin-top: 10px;">
+                <p style="font-weight: bold; font-size: 13px; color: #166534; margin-bottom: 10px;">📝 Datos Específicos del Vehículo/Moto/Bicicleta</p>
+                <div class="grid-3">
+                    <div class="form-group" id="boxPlaca">
+                        <label>Placa Vehicular</label>
+                        <input type="text" id="placa" placeholder="ABC-123">
+                    </div>
+                    <div class="form-group" id="boxColor">
+                        <label>Color</label>
+                        <input type="text" id="color">
+                    </div>
+                    <div class="form-group" id="boxMarca">
+                        <label>Marca</label>
+                        <input type="text" id="marca">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group" id="boxLinea">
+                        <label>Línea</label>
+                        <input type="text" id="linea">
+                    </div>
+                    <div class="form-group" id="boxChasis">
+                        <label># Chasis / Marco</label>
+                        <input type="text" id="chasis">
+                    </div>
+                </div>
+                <div class="grid-2" id="boxMotorSerial">
+                    <div class="form-group" id="boxMotor">
+                        <label># Motor</label>
+                        <input type="text" id="motor">
+                    </div>
+                    <div class="form-group" id="boxSerial">
+                        <label># Serial</label>
+                        <input type="text" id="serial">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3. RELATO Y SEGURIDAD -->
+        <div class="card">
+            <h2>3. Relato de los Hechos y Seguridades</h2>
+            <div class="form-group">
+                <label>Descripción / Relato Cronológico de los Hechos</label>
+                <textarea id="relatoHechos" rows="4" placeholder="Escriba detalladamente qué sucedió..." required></textarea>
+            </div>
+            <div class="grid-2 hidden" id="boxSeguroGPS">
+                <div class="form-group">
+                    <label>¿Seguro Todo Riesgo?</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="seguro" value="SI" onchange="toggleEmpresaSeguro(true)"> SÍ</label>
+                        <label><input type="radio" name="seguro" value="NO" checked onchange="toggleEmpresaSeguro(false)"> NO</label>
+                    </div>
+                    <div class="form-group hidden" id="boxEmpresaSeguro" style="margin-top: 10px;">
+                        <label>Aseguradora / Empresa encargada</label>
+                        <input type="text" id="empresaSeguro" placeholder="Ej: SURA, Allianz, Seguros del Estado">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>¿GPS Activo?</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="gps" value="SI" onchange="toggleEmpresaGPS(true)"> SÍ</label>
+                        <label><input type="radio" name="gps" value="NO" checked onchange="toggleEmpresaGPS(false)"> NO</label>
+                    </div>
+                    <div class="form-group hidden" id="boxEmpresaGPS" style="margin-top: 10px;">
+                        <label>Empresa Proveedora del GPS</label>
+                        <input type="text" id="empresaGps" placeholder="Ej: Tracker, Hunter, Satrack">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 4. ZONA Y CUADRANTE (DOS ESPACIOS PARA PERSONAL DE ATENCIÓN) -->
+        <div class="card">
+            <h2>4. Zona de Atención y Datos del Personal Policial (2 Espacios)</h2>
+            <div class="grid-2" style="margin-bottom: 15px;">
+                <div class="form-group">
+                    <label>Jurisdicción / Zona encargada</label>
+                    <input type="text" id="zonaAtencion" placeholder="Esperando selección de barrio..." readonly style="background-color: #e2e8f0; font-weight: bold; color: var(--primary-color);">
+                </div>
+            </div>
+
+            <!-- ESPACIO PERSONAL / FUNCIONARIO 1 -->
+            <div class="seccion-dupla">
+                <h4 style="font-size: 13px; color: var(--secondary-color); margin-bottom: 10px;">👮‍♂️ Personal / Funcionario de Atención #1</h4>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Número de Cuadrante (Espacio 1)</label>
+                        <input type="text" id="cuadranteNum" placeholder="Ej: Cuadrante 12">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombres / Datos del Personal (Espacio 1)</label>
+                        <input type="text" id="cuadranteNombres" placeholder="Ej: PT. Juan Pérez">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Cédulas / Identificación Policial (Espacio 1)</label>
+                        <input type="text" id="cuadranteCedulas" placeholder="Ej: 101234567">
+                    </div>
+                    <div class="form-group">
+                        <label>Placa de Identificación Policial (Espacio 1)</label>
+                        <input type="text" id="cuadrantePlacas" placeholder="Ej: 123456">
+                    </div>
+                </div>
+            </div>
+
+            <!-- ESPACIO PERSONAL / FUNCIONARIO 2 -->
+            <div class="seccion-dupla">
+                <h4 style="font-size: 13px; color: var(--secondary-color); margin-bottom: 10px;">👮‍♂️ Personal / Funcionario de Atención #2</h4>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Número de Cuadrante (Espacio 2)</label>
+                        <input type="text" id="cuadranteNum2" placeholder="Ej: Cuadrante 12">
+                    </div>
+                    <div class="form-group">
+                        <label>Nombres / Datos del Personal (Espacio 2)</label>
+                        <input type="text" id="cuadranteNombres2" placeholder="Ej: PT. Carlos Gómez">
+                    </div>
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Cédulas / Identificación Policial (Espacio 2)</label>
+                        <input type="text" id="cuadranteCedulas2" placeholder="Ej: 108765432">
+                    </div>
+                    <div class="form-group">
+                        <label>Placa de Identificación Policial (Espacio 2)</label>
+                        <input type="text" id="cuadrantePlacas2" placeholder="Ej: 098765">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 5. ACTIVIDADES JUDICIALES -->
+        <div class="card">
+            <h2>5. Actividades Judiciales</h2>
+            <label style="margin-bottom: 10px; display: block;">Haz clic en las actividades realizadas para desplegar su cuadro de explicación individual:</label>
+            
+            <div class="activity-buttons" id="panelActividadesBtns">
+                <button type="button" class="btn-pill" id="btn-DENUNCIA" onclick="toggleActividadDinamica('DENUNCIA', '📑 Denuncia Penal', '📑')">📑 Denuncia Penal</button>
+                <button type="button" class="btn-pill" id="btn-CAMARAS" onclick="toggleActividadDinamica('CAMARAS', 'VERIFICACIÓN DE CÁMARAS', '📹')">📹 Cámaras</button>
+                <button type="button" class="btn-pill" id="btn-ENTREVISTAS" onclick="toggleActividadDinamica('ENTREVISTAS', 'ENTREVISTAS DE CAMPO', '👥')">👥 Entrevistas</button>
+                <button type="button" class="btn-pill" id="btn-CUADRANTE" onclick="toggleActividadDinamica('CUADRANTE', 'TOMA DE CONTACTO POLICÍA / CUADRANTE', '📞')">📞 Contacto Policía/Cuadrante</button>
+                <button type="button" class="btn-pill" id="btn-FOTOGRAFIA" onclick="toggleActividadDinamica('FOTOGRAFIA', 'FIJACIÓN FOTOGRÁFICA', '📸')">📸 Fijación Fotográfica</button>
+                <button type="button" class="btn-pill" id="btn-INSPECCION" onclick="toggleActividadDinamica('INSPECCION', 'INSPECCIÓN LUGAR DEL HECHO', '🔍')">🔍 Inspección Lugar del Hecho</button>
+                <button type="button" class="btn-pill" id="btn-ANTECEDENTES" onclick="toggleActividadDinamica('ANTECEDENTES', 'VERIFICACIÓN DE ANTECEDENTES', '📄')">📄 Antecedentes</button>
+            </div>
+            <div id="contenedorActividadesDinamicas"></div>
+        </div>
+        
+        <div style="margin-bottom: 25px;">
+            <button type="submit" id="btnGuardarProcesar" class="btn btn-primary" style="width: 100%; font-size: 16px;">⚙️ Procesar Novedad y Generar Reporte</button>
+        </div>
+    </form>
+    
+    <div id="resultadoSeccion" class="card hidden">
+        <h2>📋 Reporte Generado Listo para WhatsApp</h2>
+        <div id="outputTexto" class="card" style="padding: 15px; margin-bottom: 15px;"></div>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-success" onclick="enviarWhatsApp()">💬 Enviar directamente a WhatsApp</button>
+            <button type="button" class="btn btn-secondary" onclick="copiarTexto()">📋 Copiar Texto al Portapapeles</button>
+        </div>
+    </div>
+    
+    <!-- CONSOLA SUPER ADMIN -->
+    <div id="adminPanel" class="card hidden" style="border-top: 4px solid var(--danger-color);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+            <h2 style="margin: 0; border: none; padding: 0; color: #991b1b;">🛠️ Consola de Super Admin (Historial General desde Google Sheets)</h2>
+            <div style="display: flex; gap: 10px;">
+                <button type="button" class="btn btn-secondary" onclick="cargarTablaAdmin()">🔄 Recargar Hoja</button>
+                <button type="button" class="btn btn-success" onclick="exportarExcel()">📊 Descargar Todo en Excel (.xlsx)</button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table id="tablaRegistros">
+                <thead>
+                    <tr>
+                        <th>Ref</th>
+                        <th>Tipo Novedad</th>
+                        <th>Delito/Subtipo</th>
+                        <th>Fecha/Día</th>
+                        <th>Barrio / Comuna</th>
+                        <th>Víctima(s) Total</th>
+                        <th>Elaborado Por</th>
+                        <th>Placa Vehicular</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+    /********************************************************************************
+     * 📌 URL DE GOOGLE APPS SCRIPT (Actualizada correctamente)
+     ********************************************************************************/
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxjF4bqK6GEW0dVhdg1bZ3tvNAc9Fvp_lcMIG7lbJAFo5gjfFOu-krGdlMt77Hw0mYWTg/exec";
+    /********************************************************************************/
+    
+    const CLAVE_SUPERADMIN = "SUPER123";
+    let rolActual = "admin";
+    let contadorVictimasNum = 1;
+    let modoLecturaBloqueado = false;
+    let datosRemotosSheets = [];
+    const diasSemanaNombres = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+    
+    const BD_FUNCIONARIOS = {
+        "1074809099": { nombre: "CAMILO TORRES RINCON", cargo: "AXP", dependencia: "APOYO" },
+        "1089768976": { nombre: "JULIAN EDUARDO RAMIREZ", cargo: "PT", dependencia: "CRIMEN" },
+        "78963452": { nombre: "CAROLINA RODRIGUEZ GOMEZ", cargo: "SI", dependencia: "PATRIMONIO" }
+    };
+    const mapeoComunasBarrios = {
+        'COMUNA 1': ['Compartir', 'Hogares de Soacha', 'Ciudad Latina', 'Quintanar', 'Parque Capital', 'Maiporé', 'Llanos de Soacha'],
+        'COMUNA 2': ['Soacha Centro', 'El Sol', 'Las Villas', 'Américas', 'Satélite', 'Quintas de la Laguna', 'Tejares'],
+        'COMUNA 3': ['La Despensa', 'León XIII', 'Ciudad Verde', 'Los Olivos', 'La María', 'Potrero Grande'],
+        'COMUNA 4': ['Cazucá', 'Ciudadela Sucre', 'El Boso', 'La Isla', 'Julio Rincón', 'Los Pinos'],
+        'COMUNA 5': ['San Mateo', 'Quintania', 'Casas de San Mateo', 'Rincón de San Mateo', 'Club Tibanica'],
+        'COMUNA 6': ['San Humberto', 'Camilo Torres', 'Chicó', 'El Danubio', 'Galán', 'La Cristalina']
+    };
+    const mapeoSubtipos = {
+        'HURTO': ['MOTO', 'VEHÍCULO', 'BICICLETA', 'RESIDENCIA', 'COMERCIO', 'PERSONA'],
+        'HOMICIDIO': ['SICARIATO', 'RIÑA', 'ATRACO', 'SITUACIÓN EN DESARROLLO'],
+        'LESIONES': ['RIÑA', 'ACCIDENTE', 'AGRESIÓN'],
+        'ESTAFA': ['DIGITAL', 'PAQUETE CHILENO', 'LLAMADA EXTORSIVA'],
+        'DAÑO': ['BIEN PÚBLICO', 'BIEN PRIVADO']
+    };
+    const opcionesElementos = {
+        'MOTO': ['MOTO', 'MOTOCARRO', 'CUATRIMOTO'],
+        'VEHÍCULO': ['AUTOMÓVIL', 'CAMIONETA', 'BUS', 'BUSETA', 'MICROBÚS', 'CAMIÓN', 'VOLQUETA', 'TRACTOCAMIÓN'],
+        'BICICLETA': ['BICICLETA', 'BICITAXI'],
+        'RESIDENCIA': ['CASA', 'APARTAMENTO', 'LOCAL'],
+        'COMERCIO': ['ESTABLECIMIENTO', 'ALMACÉN'],
+        'PERSONA': ['CELULAR', 'BOLSO / CARTERA', 'DINERO EFECTIVO', 'JOYAS', 'DOCUMENTOS']
+    };
+    const modalidadesHurto = {
+        'MOTO': ['ATRACO', 'HALADO', 'FACTOR OPORTUNIDAD'],
+        'BICICLETA': ['ATRACO', 'HALADO', 'FACTOR OPORTUNIDAD'],
+        'VEHÍCULO': ['ATRACO', 'HALADO', 'FACTOR OPORTUNIDAD'],
+        'RESIDENCIA': ['VENTOSA', 'LLAVE MAESTRA', 'FACTOR OPORTUNIDAD', 'ATRACCION / ENGAÑO'],
+        'COMERCIO': ['ROBO CON VIOLENCIA', 'MECHERO', 'BOQUETE'],
+        'PERSONA': ['ATRACO', 'COSPEO / RAUDA', 'ESCOPOLAMINA', 'FACTOR OPORTUNIDAD']
+    };
+    const actividadesEstado = {
+        DENUNCIA: false,
+        CAMARAS: false,
+        ENTREVISTAS: false,
+        CUADRANTE: false,
+        FOTOGRAFIA: false,
+        INSPECCION: false,
+        ANTECEDENTES: false
+    };
+    document.addEventListener("DOMContentLoaded", function() {
+        const hoy = new Date();
+        document.getElementById('fechaHecho').value = hoy.toISOString().split('T')[0];
+        document.getElementById('horaHecho').value = hoy.toTimeString().split(' ')[0].substring(0,5);
+        calcularDiaSemana();
+        actualizarConsecutivoVisual();
+        aplicarEstadoCampos();
+    });
+    function toggleBuscador() {
+        document.getElementById('panelBuscador').classList.toggle('hidden');
+    }
+    function buscarFuncionarioElab() {
+        const cedula = document.getElementById('elabCedula').value.trim();
+        const funcionario = BD_FUNCIONARIOS[cedula];
+        if(funcionario) {
+            document.getElementById('elabNombre').value = funcionario.nombre;
+            document.getElementById('elabCargo').value = funcionario.cargo;
+            document.getElementById('elabDependencia').value = funcionario.dependencia;
+        } else {
+            document.getElementById('elabNombre').value = "";
+            document.getElementById('elabCargo').value = "";
+            document.getElementById('elabDependencia').value = "";
+        }
+    }
+    function calcularDiaSemana() {
+        const valFecha = document.getElementById('fechaHecho').value;
+        if(valFecha) {
+            const partes = valFecha.split('-');
+            const fechaObj = new Date(partes[0], partes[1] - 1, partes[2]);
+            document.getElementById('diaSemana').value = diasSemanaNombres[fechaObj.getDay()];
+        }
+    }
+    function evaluarMenorEdad(inputEdad) {
+        const card = inputEdad.closest('.victima-card');
+        const selectMenor = card.querySelector('.vic-menor');
+        const edad = parseInt(inputEdad.value);
+        if(!isNaN(edad)) {
+            selectMenor.value = edad < 18 ? 'SI' : 'NO';
+        }
+    }
+    function agregarVictima() {
+        if (document.querySelectorAll('.victima-card').length >= 10) {
+            alert("Se ha alcanzado el límite máximo de 10 víctimas por reporte.");
+            return;
+        }
+        contadorVictimasNum++;
+        const idCard = `victima_card_${Date.now()}`;
+        const contenedor = document.getElementById('contenedorVictimas');
+        const nuevaCard = document.createElement('div');
+        nuevaCard.className = 'sub-card victima-card';
+        nuevaCard.id = idCard;
+        nuevaCard.innerHTML = `
+            <div style="display:flex; justify-content: space-between; align-items:center; margin-bottom:10px;">
+                <h4 class="victima-titulo" style="font-size: 13px; color: var(--secondary-color);">Víctima</h4>
+                <button type="button" class="btn-delete-act" onclick="eliminarVictima('${idCard}')">❌ Eliminar Víctima</button>
+            </div>
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Nombre de la Víctima</label>
+                    <input type="text" class="vic-nombre" placeholder="Nombre completo" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Documento</label>
+                    <select class="vic-tipo-doc" required>
+                        <option value="CC">Cédula de Ciudadanía (CC)</option>
+                        <option value="CE">Cédula de Extranjería (CE)</option>
+                        <option value="PASAPORTE">Pasaporte</option>
+                        <option value="TI">Tarjeta de Identidad (TI)</option>
+                        <option value="PEP">PEP</option>
+                        <option value="PPT">PPT</option>
+                        <option value="NIT">NIT</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Número Documento</label>
+                    <input type="text" class="vic-doc" placeholder="Número de documento" required>
+                </div>
+            </div>
+            <div class="grid-4">
+                <div class="form-group">
+                    <label>Edad</label>
+                    <input type="number" class="vic-edad" placeholder="Ej: 25" min="0" max="120" oninput="evaluarMenorEdad(this)" required>
+                </div>
+                <div class="form-group">
+                    <label>¿Es Menor de Edad?</label>
+                    <select class="vic-menor" required>
+                        <option value="NO">NO</option>
+                        <option value="SI">SÍ</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Teléfono</label>
+                    <input type="tel" class="vic-tel" placeholder="Número de contacto" required>
+                </div>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" class="vic-correo" placeholder="correo@ejemplo.com">
+                </div>
+            </div>
+        `;
+        contenedor.appendChild(nuevaCard);
+        actualizarContadorVictimasVisual();
+        if(modoLecturaBloqueado) aplicarEstadoCampos();
+    }
+    function eliminarVictima(idCard) {
+        if(document.querySelectorAll('.victima-card').length <= 1) {
+            alert("Debe haber al menos una víctima registrada.");
+            return;
+        }
+        const card = document.getElementById(idCard);
+        if(card) card.remove();
+        actualizarContadorVictimasVisual();
+    }
+    function actualizarContadorVictimasVisual() {
+        const victimas = document.querySelectorAll('.victima-card');
+        document.getElementById('contadorVictimas').innerText = victimas.length;
+        victimas.forEach((card, idx) => {
+            const titulo = card.querySelector('.victima-titulo');
+            if (titulo) titulo.innerText = `Víctima #${idx + 1}`;
+        });
+    }
+    function switchRole() {
+        const select = document.getElementById('userRole');
+        const nuevoRol = select.value;
+        const adminPanel = document.getElementById('adminPanel');
+        if(nuevoRol === 'superadmin') {
+            const pass = prompt("Ingrese la clave de Super Admin:");
+            if(pass === CLAVE_SUPERADMIN) {
+                rolActual = 'superadmin';
+                alert("Acceso concedido como Super Admin.");
+                adminPanel.classList.remove('hidden');
+                cargarTablaAdmin();
+            } else {
+                alert("Palabra clave incorrecta.");
+                select.value = 'admin';
+                switchRole();
+            }
+        } else {
+            rolActual = 'admin';
+            adminPanel.classList.add('hidden');
+        }
+        aplicarEstadoCampos();
+    }
+    function toggleEmpresaSeguro(mostrar) {
+        const box = document.getElementById('boxEmpresaSeguro');
+        if(mostrar) { box.classList.remove('hidden'); } 
+        else { box.classList.add('hidden'); document.getElementById('empresaSeguro').value = ''; }
+    }
+    function toggleEmpresaGPS(mostrar) {
+        const box = document.getElementById('boxEmpresaGPS');
+        if(mostrar) { box.classList.remove('hidden'); } 
+        else { box.classList.add('hidden'); document.getElementById('empresaGps').value = ''; }
+    }
+    function actualizarBarrios() {
+        const comuna = document.getElementById('selectComuna').value;
+        const barrioSelect = document.getElementById('selectBarrio');
+        barrioSelect.innerHTML = '<option value="">-- Seleccione Barrio --</option>';
+        if (comuna && mapeoComunasBarrios[comuna]) {
+            mapeoComunasBarrios[comuna].forEach(barrio => {
+                barrioSelect.innerHTML += `<option value="${barrio}">${barrio}</option>`;
+            });
+        }
+        barrioSelect.innerHTML += `<option value="OTRO">-- OTRO BARRIO / SECTOR --</option>`;
+        evaluarBarrioOtro();
+    }
+    function evaluarBarrioOtro() {
+        const barrioVal = document.getElementById('selectBarrio').value;
+        const boxOtro = document.getElementById('boxBarrioOtro');
+        if(barrioVal === 'OTRO') {
+            boxOtro.classList.remove('hidden');
+            document.getElementById('barrioOtroInput').setAttribute('required', 'true');
+        } else {
+            boxOtro.classList.add('hidden');
+            document.getElementById('barrioOtroInput').removeAttribute('required');
+            document.getElementById('barrioOtroInput').value = '';
+        }
+        autoAsignarZona();
+    }
+    function autoAsignarZona() {
+        const comuna = document.getElementById('selectComuna').value;
+        let barrio = document.getElementById('selectBarrio').value;
+        if(barrio === 'OTRO') { barrio = document.getElementById('barrioOtroInput').value || 'OTRO SECTOR'; }
+        const zonaInput = document.getElementById('zonaAtencion');
+        if (comuna && barrio) {
+            zonaInput.value = `Jurisdicción Operativa: ${comuna} - Barrio: ${barrio.toUpperCase()}`;
+        } else {
+            zonaInput.value = "";
+        }
+    }
+    function obtenerConsecutivoSiguiente() {
+        let consGuardado = localStorage.getItem('ultimo_consecutivo_num') || "7";
+        let numCons = parseInt(consGuardado);
+        const anioActual = new Date().getFullYear();
+        return `${numCons.toString().padStart(4, '0')} - ${anioActual}`;
+    }
+    function actualizarConsecutivoVisual() {
+        document.getElementById('consecutivo').value = obtenerConsecutivoSiguiente();
+    }
+    function actualizarSubtipos() {
+        const tipo = document.getElementById('tipoDelito').value;
+        const subtipoSelect = document.getElementById('subtipoDelito');
+        subtipoSelect.innerHTML = '<option value="">-- Seleccione --</option>';
+        if (tipo && mapeoSubtipos[tipo]) {
+            mapeoSubtipos[tipo].forEach(sub => {
+                subtipoSelect.innerHTML += `<option value="${sub}">${sub}</option>`;
+            });
+        }
+        actualizarTipoEspecificoVehiculo();
+    }
+    function actualizarTipoEspecificoVehiculo() {
+        const subtipo = document.getElementById('subtipoDelito').value;
+        const boxElemEspec = document.getElementById('boxElementoEspecifico');
+        const selectElemEspec = document.getElementById('selectElementoEspecifico');
+        selectElemEspec.innerHTML = '<option value="">-- Seleccione --</option>';
+        if (opcionesElementos[subtipo]) {
+            boxElemEspec.classList.remove('hidden');
+            opcionesElementos[subtipo].forEach(item => {
+                selectElemEspec.innerHTML += `<option value="${item}">${item}</option>`;
+            });
+        } else {
+            boxElemEspec.classList.add('hidden');
+        }
+        evaluarCamposVehiculo();
+    }
+    function evaluarCamposVehiculo() {
+        const subtipo = document.getElementById('subtipoDelito').value;
+        const especifico = document.getElementById('selectElementoEspecifico').value;
+        const divVehiculo = document.getElementById('camposVehiculo');
+        const boxSeguroGPS = document.getElementById('boxSeguroGPS');
+        const boxPlaca = document.getElementById('boxPlaca');
+        const boxColor = document.getElementById('boxColor');
+        const boxMarca = document.getElementById('boxMarca');
+        const boxLinea = document.getElementById('boxLinea');
+        const boxChasis = document.getElementById('boxChasis');
+        const boxMotorSerial = document.getElementById('boxMotorSerial');
+        
+        [boxPlaca, boxColor, boxMarca, boxLinea, boxChasis, boxMotorSerial].forEach(b => b.classList.remove('hidden'));
+        if (subtipo === 'MOTO' || subtipo === 'VEHÍCULO') {
+            divVehiculo.classList.remove('hidden');
+            boxSeguroGPS.classList.remove('hidden');
+        } else if (subtipo === 'BICICLETA') {
+            divVehiculo.classList.remove('hidden');
+            boxSeguroGPS.classList.remove('hidden');
+            boxMarca.classList.add('hidden');
+            boxLinea.classList.add('hidden');
+            boxMotorSerial.classList.add('hidden');
+            if (especifico === 'BICITAXI') { boxPlaca.classList.remove('hidden'); } 
+            else { boxPlaca.classList.add('hidden'); }
+        } else {
+            divVehiculo.classList.add('hidden');
+            boxSeguroGPS.classList.add('hidden');
+            document.querySelectorAll('input[name="seguro"]')[1].checked = true;
+            document.querySelectorAll('input[name="gps"]')[1].checked = true;
+            toggleEmpresaSeguro(false);
+            toggleEmpresaGPS(false);
+        }
+        actualizarModalidades();
+    }
+    function actualizarModalidades() {
+        const tipo = document.getElementById('tipoDelito').value;
+        const subtipo = document.getElementById('subtipoDelito').value;
+        const modSelect = document.getElementById('modalidad');
+        modSelect.innerHTML = '<option value="">-- Seleccione --</option>';
+        if (tipo === 'HURTO' && modalidadesHurto[subtipo]) {
+            modalidadesHurto[subtipo].forEach(mod => {
+                modSelect.innerHTML += `<option value="${mod}">${mod}</option>`;
+            });
+        } else {
+            modSelect.innerHTML += `
+                <option value="DIRECTA">DIRECTA</option>
+                <option value="FLAGRANCIA">FLAGRANCIA</option>
+                <option value="OTRA">OTRA</option>
+            `;
+        }
+    }
+    function obtenerGPS() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                document.getElementById('gpsCoords').value = `${position.coords.latitude}, ${position.coords.longitude}`;
+            }, function() {
+                alert("No se pudo obtener la geolocalización automática. Por favor, ingrésela manualmente.");
+            });
+        }
+    }
+    function toggleActividadDinamica(idKey, titulo, icono) {
+        const contenedor = document.getElementById('contenedorActividadesDinamicas');
+        const btn = document.getElementById(`btn-${idKey}`);
+        actividadesEstado[idKey] = !actividadesEstado[idKey];
+        if (actividadesEstado[idKey]) {
+            btn.classList.add('active');
+            let htmlCard = '';
+            if (idKey === 'DENUNCIA') {
+                htmlCard = `
+                    <div class="actividad-item-card" id="card_act_${idKey}">
+                        <div class="actividad-item-header">
+                            <span class="actividad-item-title">${icono} ${titulo}</span>
+                            <button type="button" class="btn-delete-act" onclick="toggleActividadDinamica('${idKey}', '${titulo}', '${icono}')">❌ Quitar</button>
+                        </div>
+                        <div class="grid-2">
+                            <div class="form-group" style="margin: 0;">
+                                <label>¿Se Recepcionó Denuncia Penal?</label>
+                                <select id="act_denuncia_estado" required>
+                                    <option value="SI">SÍ</option>
+                                    <option value="NO">NO</option>
+                                </select>
+                            </div>
+                            <div class="form-group" style="margin: 0;">
+                                <label>Número SPOA / Constancia (Opcional)</label>
+                                <input type="text" id="act_denuncia_spoa" placeholder="Ej: 251106000123202600001">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                htmlCard = `
+                    <div class="actividad-item-card" id="card_act_${idKey}">
+                        <div class="actividad-item-header">
+                            <span class="actividad-item-title">${icono} ${titulo}</span>
+                            <button type="button" class="btn-delete-act" onclick="toggleActividadDinamica('${idKey}', '${titulo}', '${icono}')">❌ Quitar</button>
+                        </div>
+                        <div class="form-group" style="margin: 0;">
+                            <label>Detalle / Resultado de la Actividad:</label>
+                            <input type="text" class="input-detalle-actividad" data-actid="${idKey}" data-titulo="${titulo}" placeholder="Explique detalladamente qué se realizó..." required>
+                        </div>
+                    </div>
+                `;
+            }
+            contenedor.insertAdjacentHTML('beforeend', htmlCard);
+        } else {
+            btn.classList.remove('active');
+            const cardElement = document.getElementById(`card_act_${idKey}`);
+            if (cardElement) { cardElement.remove(); }
+        }
+        if(modoLecturaBloqueado) aplicarEstadoCampos();
+    }
+    function ejecutarBusqueda() {
+        const p = document.getElementById('buscPlaca').value.trim().toUpperCase();
+        const c = document.getElementById('buscCedula').value.trim();
+        const cons = document.getElementById('buscConsecutivo').value.trim().replace('#','');
+        const f = document.getElementById('buscFecha').value;
+        
+        if(!p && !c && !cons && !f) {
+            alert("Ingrese al menos un criterio de búsqueda (Placa, Cédula, Consecutivo o Fecha).");
+            return;
+        }
+        let registros = JSON.parse(localStorage.getItem('novedades_records') || '[]');
+        let encontrado = registros.find(r => {
+            let matchP = p ? (r.placa && r.placa.toUpperCase() === p) : true;
+            let matchC = c ? (r.cedula === c || (r.victimasList && r.victimasList.some(v => v.doc === c))) : true;
+            let matchCons = cons ? (r.consecutivo && r.consecutivo.replace('#','') === cons) : true;
+            let matchF = f ? (r.fecha === f) : true;
+            return matchP && matchC && matchCons && matchF;
+        });
+        
+        const msj = document.getElementById('msjBusqueda');
+        if(encontrado) {
+            msj.style.color = "#16a34a";
+            msj.innerText = `✅ Registro encontrado: ${encontrado.consecutivo}`;
+            cargarRegistroEnFormulario(encontrado);
+            modoLecturaBloqueado = true;
+            aplicarEstadoCampos();
+        } else {
+            msj.style.color = "#ef4444";
+            msj.innerText = "❌ No se encontró ningún registro local con esos parámetros.";
+        }
+    }
+    function cargarRegistroEnFormulario(r) {
+        document.getElementById('elabCedula').value = r.elabCedula || '';
+        buscarFuncionarioElab();
+        document.getElementById('consecutivo').value = r.consecutivo;
+        document.getElementById('tipoNovedad').value = r.tipoNovedad;
+        document.getElementById('fechaHecho').value = r.fecha;
+        calcularDiaSemana();
+        document.getElementById('horaHecho').value = r.hora;
+        document.getElementById('selectComuna').value = r.comuna;
+        actualizarBarrios();
+        
+        if(r.barrioOtro) {
+            document.getElementById('selectBarrio').value = "OTRO";
+            evaluarBarrioOtro();
+            document.getElementById('barrioOtroInput').value = r.barrioOtro;
+        } else {
+            document.getElementById('selectBarrio').value = r.barrio;
+            evaluarBarrioOtro();
+        }
+        document.getElementById('nomenclatura').value = r.nomenclatura;
+        document.getElementById('gpsCoords').value = r.gpsCoords || '';
+        
+        const contenedor = document.getElementById('contenedorVictimas');
+        contenedor.innerHTML = "";
+        if(r.victimasList && r.victimasList.length > 0) {
+            r.victimasList.forEach((v, idx) => {
+                const idCard = `victima_card_${Date.now()}_${idx}`;
+                contenedor.innerHTML += `
+                    <div class="sub-card victima-card" id="${idCard}">
+                        <h4 class="victima-titulo" style="font-size: 13px; color: var(--secondary-color); margin-bottom: 10px;">Víctima #${idx+1}</h4>
+                        <div class="grid-3">
+                            <div class="form-group">
+                                <label>Nombre de la Víctima</label>
+                                <input type="text" class="vic-nombre" value="${v.nombre}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Documento</label>
+                                <select class="vic-tipo-doc" required>
+                                    <option value="${v.tipoDoc}">${v.tipoDoc}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Número Documento</label>
+                                <input type="text" class="vic-doc" value="${v.doc}" required>
+                            </div>
+                        </div>
+                        <div class="grid-4">
+                            <div class="form-group">
+                                <label>Edad</label>
+                                <input type="number" class="vic-edad" value="${v.edad || ''}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>¿Es Menor de Edad?</label>
+                                <select class="vic-menor" required>
+                                    <option value="${v.menorEdad || 'NO'}">${v.menorEdad || 'NO'}</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Teléfono</label>
+                                <input type="tel" class="vic-tel" value="${v.tel}" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Correo Electrónico</label>
+                                <input type="email" class="vic-correo" value="${v.correo}">
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            actualizarContadorVictimasVisual();
+        }
+        
+        document.getElementById('tipoDelito').value = r.tipoDelito;
+        actualizarSubtipos();
+        document.getElementById('subtipoDelito').value = r.subtipo;
+        actualizarTipoEspecificoVehiculo();
+        
+        if(r.elementoEspecifico) { document.getElementById('selectElementoEspecifico').value = r.elementoEspecifico; }
+        evaluarCamposVehiculo();
+        document.getElementById('modalidad').value = r.modalidad;
+        document.getElementById('armaEmpleada').value = r.arma;
+        document.getElementById('placa').value = r.placa || '';
+        document.getElementById('color').value = r.color || '';
+        document.getElementById('marca').value = r.marca || '';
+        document.getElementById('linea').value = r.linea || '';
+        document.getElementById('chasis').value = r.chasis || '';
+        document.getElementById('motor').value = r.motor || '';
+        document.getElementById('serial').value = r.serial || '';
+        document.getElementById('relatoHechos').value = r.relato;
+        
+        if(r.seguro === 'SI') {
+            document.querySelectorAll('input[name="seguro"]')[0].checked = true;
+            toggleEmpresaSeguro(true);
+            document.getElementById('empresaSeguro').value = r.empresaSeguro;
+        } else {
+            document.querySelectorAll('input[name="seguro"]')[1].checked = true;
+            toggleEmpresaSeguro(false);
+        }
+        
+        if(r.gps === 'SI') {
+            document.querySelectorAll('input[name="gps"]')[0].checked = true;
+            toggleEmpresaGPS(true);
+            document.getElementById('empresaGps').value = r.empresaGps;
+        } else {
+            document.querySelectorAll('input[name="gps"]')[1].checked = true;
+            toggleEmpresaGPS(false);
+        }
+        
+        autoAsignarZona();
+        document.getElementById('cuadranteNum').value = r.cuadranteNum || '';
+        document.getElementById('cuadranteNombres').value = r.cuadranteNombres || '';
+        document.getElementById('cuadranteCedulas').value = r.cuadranteCedulas || '';
+        document.getElementById('cuadrantePlacas').value = r.cuadrantePlacas || '';
+        document.getElementById('cuadranteNum2').value = r.cuadranteNum2 || '';
+        document.getElementById('cuadranteNombres2').value = r.cuadranteNombres2 || '';
+        document.getElementById('cuadranteCedulas2').value = r.cuadranteCedulas2 || '';
+        document.getElementById('cuadrantePlacas2').value = r.cuadrantePlacas2 || '';
+    }
+    function aplicarEstadoCampos() {
+        const formInputs = document.querySelectorAll('#novedadForm input, #novedadForm select, #novedadForm textarea');
+        const btnGPS = document.getElementById('btnGpsCap');
+        const btnAddVic = document.getElementById('btnAgregarVic');
+        const btnProcesar = document.getElementById('btnGuardarProcesar');
+        const consecutivoInput = document.getElementById('consecutivo');
+        const lblConsecutivo = document.getElementById('lblConsecutivoEstado');
+        
+        if(rolActual === 'superadmin') {
+            consecutivoInput.readOnly = false;
+            consecutivoInput.style.backgroundColor = "#fff";
+            lblConsecutivo.innerText = "(Edición Manual Habilitada)";
+            lblConsecutivo.style.color = "#ef4444";
+        } else {
+            consecutivoInput.readOnly = true;
+            consecutivoInput.style.backgroundColor = "#f1f5f9";
+            lblConsecutivo.innerText = "(Automático)";
+            lblConsecutivo.style.color = "#22c55e";
+        }
+        
+        if(modoLecturaBloqueado) {
+            if(rolActual === 'admin') {
+                formInputs.forEach(input => input.disabled = true);
+                btnGPS.disabled = true;
+                btnAddVic.disabled = true;
+                btnProcesar.disabled = true;
+                btnProcesar.innerText = "🔒 Registro en Modo Lectura (Búsqueda Ejecutada)";
+            } else if(rolActual === 'superadmin') {
+                formInputs.forEach(input => input.disabled = false);
+                btnGPS.disabled = false;
+                btnAddVic.disabled = false;
+                btnProcesar.disabled = false;
+                btnProcesar.innerText = "✏️ Guardar Cambios / Sobrescribir Registro";
+            }
+        } else {
+            formInputs.forEach(input => input.disabled = false);
+            consecutivoInput.disabled = false;
+            btnGPS.disabled = false;
+            btnAddVic.disabled = false;
+            btnProcesar.disabled = false;
+            btnProcesar.innerText = "⚙️ Procesar Novedad y Generar Reporte";
+        }
+    }
+    function limpiarFormularioYModo() {
+        modoLecturaBloqueado = false;
+        document.getElementById('novedadForm').reset();
+        document.getElementById('msjBusqueda').innerText = "";
+        document.getElementById('elabNombre').value = "";
+        document.getElementById('elabCargo').value = "";
+        document.getElementById('elabDependencia').value = "";
+        
+        document.getElementById('contenedorActividadesDinamicas').innerHTML = "";
+        for (let key in actividadesEstado) {
+            actividadesEstado[key] = false;
+            const btn = document.getElementById(`btn-${key}`);
+            if (btn) btn.classList.remove('active');
+        }
+        const hoy = new Date();
+        document.getElementById('fechaHecho').value = hoy.toISOString().split('T')[0];
+        document.getElementById('horaHecho').value = hoy.toTimeString().split(' ')[0].substring(0,5);
+        calcularDiaSemana();
+        actualizarConsecutivoVisual();
+        evaluarBarrioOtro();
+        actualizarSubtipos();
+        aplicarEstadoCampos();
+    }
+    let textoFormateadoGlobal = "";
+    function procesarFormulario(e) {
+        e.preventDefault();
+        
+        const elabCedula = document.getElementById('elabCedula').value;
+        const elabNombre = document.getElementById('elabNombre').value;
+        const elabCargo = document.getElementById('elabCargo').value;
+        const elabDependencia = document.getElementById('elabDependencia').value;
+        if(!elabNombre) {
+            alert("⚠️ Cédula del Funcionario no encontrada en la base de datos.");
+            return;
+        }
+        let cons = document.getElementById('consecutivo').value;
+        const tipoNov = document.getElementById('tipoNovedad').value;
+        const fecha = document.getElementById('fechaHecho').value;
+        const diaSem = document.getElementById('diaSemana').value;
+        const hora = document.getElementById('horaHecho').value;
+        const comuna = document.getElementById('selectComuna').value;
+        
+        let barrio = document.getElementById('selectBarrio').value;
+        let barrioOtro = "";
+        if(barrio === 'OTRO') {
+            barrioOtro = document.getElementById('barrioOtroInput').value;
+            barrio = barrioOtro;
+        }
+        const nomenclatura = document.getElementById('nomenclatura').value;
+        const gpsCoords = document.getElementById('gpsCoords').value.trim();
+        
+        if(!gpsCoords) {
+            alert("⚠️ La ubicación GPS es obligatoria.");
+            return;
+        }
+        const victimasCards = document.querySelectorAll('.victima-card');
+        let listaVictimas = [];
+        let textoVictimasWA = "";
+        let resumenVictimasExcel = "";
+        victimasCards.forEach((card, idx) => {
+            const vNombre = card.querySelector('.vic-nombre').value;
+            const vTipoDoc = card.querySelector('.vic-tipo-doc').value;
+            const vDoc = card.querySelector('.vic-doc').value;
+            const vEdad = card.querySelector('.vic-edad').value;
+            const vMenor = card.querySelector('.vic-menor').value;
+            const vTel = card.querySelector('.vic-tel').value;
+            const vCorreo = card.querySelector('.vic-correo').value || "No registra";
+            listaVictimas.push({
+                nombre: vNombre, tipoDoc: vTipoDoc, doc: vDoc, edad: vEdad, menorEdad: vMenor, tel: vTel, correo: vCorreo
+            });
+            textoVictimasWA += `\n*👤 VÍCTIMA #${idx + 1}:*
+• *Nombre:* ${vNombre}
+• *Documento:* ${vTipoDoc} ${vDoc}
+• *Edad:* ${vEdad} años (Menor: ${vMenor})
+• *Teléfono:* ${vTel}
+• *Correo:* ${vCorreo}`;
+            resumenVictimasExcel += `[V${idx+1}: ${vNombre} - ${vTipoDoc} ${vDoc}, Edad: ${vEdad}, Tel: ${vTel}] `;
+        });
+        const v1 = listaVictimas[0] || {};
+        
+        const tDelito = document.getElementById('tipoDelito').value;
+        const sDelito = document.getElementById('subtipoDelito').value;
+        const elemEspec = document.getElementById('selectElementoEspecifico').value || "N/A";
+        const mod = document.getElementById('modalidad').value;
+        const arma = document.getElementById('armaEmpleada').value;
+        
+        const placa = document.getElementById('placa').value || "N/A";
+        const color = document.getElementById('color').value || "N/A";
+        const marca = document.getElementById('marca').value || "N/A";
+        const linea = document.getElementById('linea').value || "N/A";
+        const chasis = document.getElementById('chasis').value || "N/A";
+        const motor = document.getElementById('motor').value || "N/A";
+        const serial = document.getElementById('serial').value || "N/A";
+        const relato = document.getElementById('relatoHechos').value;
+        
+        const seguroVal = document.querySelector('input[name="seguro"]:checked').value;
+        const empresaSeguro = document.getElementById('empresaSeguro').value || "N/A";
+        const gpsVal = document.querySelector('input[name="gps"]:checked').value;
+        const empresaGps = document.getElementById('empresaGps').value || "N/A";
+        
+        const zona = document.getElementById('zonaAtencion').value;
+        const cuadranteNum = document.getElementById('cuadranteNum').value || "No especificado";
+        const cuadranteNombres = document.getElementById('cuadranteNombres').value || "No especificado";
+        const cuadranteCedulas = document.getElementById('cuadranteCedulas').value || "No especificado";
+        const cuadrantePlacas = document.getElementById('cuadrantePlacas').value || "No especificado";
+
+        const cuadranteNum2 = document.getElementById('cuadranteNum2').value || "No especificado";
+        const cuadranteNombres2 = document.getElementById('cuadranteNombres2').value || "No especificado";
+        const cuadranteCedulas2 = document.getElementById('cuadranteCedulas2').value || "No especificado";
+        const cuadrantePlacas2 = document.getElementById('cuadrantePlacas2').value || "No especificado";
+        
+        let cadenaActividadesFinal = "";
+        let denResumen = "NO REGISTRA";
+        if (actividadesEstado.DENUNCIA) {
+            const estadoDen = document.getElementById('act_denuncia_estado').value;
+            const spoaDen = document.getElementById('act_denuncia_spoa').value.trim();
+            denResumen = estadoDen;
+            if (spoaDen) denResumen += ` (SPOA/Constancia: ${spoaDen})`;
+            cadenaActividadesFinal += `• *📑 DENUNCIA PENAL:* ${denResumen}\n`;
+        }
+        document.querySelectorAll('.input-detalle-actividad').forEach(input => {
+            const actTitulo = input.getAttribute('data-titulo');
+            const explicacion = input.value.trim() || "Sin detalles adicionales.";
+            cadenaActividadesFinal += `• *${actTitulo}:* ${explicacion}\n`;
+        });
+        if(!cadenaActividadesFinal) { cadenaActividadesFinal = "Ninguna actividad seleccionada."; }
+        
+        let mapUrl = "";
+        if(gpsCoords.includes(",")) {
+            mapUrl = `\n📍 *Enlace Maps GPS:* https://www.google.com/maps/search/?api=1&query=${gpsCoords.replace(/\s/g, '')}`;
+        }
+        
+        let encabezadoDelitoWA = "";
+        if(tDelito === 'HOMICIDIO' || tDelito === 'LESIONES') {
+            const comunaTextoLimpio = comuna.replace('COMUNA ', 'COMUNA DE ');
+            encabezadoDelitoWA = `MESOA – 01 ${tDelito} ${arma === 'ARMA DE FUEGO' ? 'CON ARMA DE FUEGO' : 'CON ' + arma} EN LA ${comunaTextoLimpio.toUpperCase()} DEL MUNICIPIO DE SOACHA`;
+        } else if(tDelito === 'HURTO' && (sDelito === 'VEHÍCULO' || sDelito === 'MOTO')) {
+            encabezadoDelitoWA = `HURTO A ${elemEspec} BAJO LA MODALIDAD DE ${mod} – EN ${barrio.toUpperCase()} MUNICIPIO DE SOACHA, CUNDINAMARCA.`;
+        } else {
+            encabezadoDelitoWA = `🚨 *REPORTE DE NOVEDAD OPERATIVA ${cons}* 🚨`;
+        }
+               
+        textoFormateadoGlobal = `🚨 *REPORTE DE NOVEDAD OPERATIVA ${cons}* 🚨
+        ${encabezadoDelitoWA}
+----------------------------------------
+*1. DATOS GENERALES Y VÍCTIMAS*
+• *Tipo Novedad:* ${tipoNov}
+• *Fecha/Día/Hora:* ${fecha} (${diaSem}) a las ${hora}
+• *Comuna/Barrio:* ${comuna} -> BARRIO: ${barrio.toUpperCase()}
+• *Nomenclatura:* ${nomenclatura}
+• *GPS Coords:* ${gpsCoords}${mapUrl}
+${textoVictimasWA}
+----------------------------------------
+*2. DATOS DEL HECHO*
+• *Delito/Situación:* ${tDelito} -> ${sDelito} ${elemEspec !== 'N/A' ? '('+elemEspec+')' : ''}
+• *Modalidad:* ${mod}
+• *Arma Empleada:* ${arma}
+`;
+        if (['HURTO', 'ESTAFA', 'DAÑO'].includes(tDelito) && elemEspec !== 'N/A') {
+            textoFormateadoGlobal += `• *Elemento / Tipo Específico:* ${elemEspec}\n`;
+        }
+        if(['MOTO', 'VEHÍCULO', 'BICICLETA'].includes(sDelito)) {
+            textoFormateadoGlobal += `*■ ESPECIFICACIONES VEHICULARES / BICICLETA:*
+  - *Tipo:* ${elemEspec}
+  - *Placa Vehicular:* ${placa}   - *Color:* ${color}
+  - *Marca:* ${marca}   - *Línea:* ${linea}
+  - *Chasis/Marco:* ${chasis}
+  - *Motor:* ${motor}   - *Serial:* ${serial}
+`;
+        }
+        textoFormateadoGlobal += `----------------------------------------
+*3. HECHOS Y RELATO:*
+${relato}
+`;
+        if (['MOTO', 'VEHÍCULO', 'BICICLETA'].includes(sDelito)) {
+            let notaGPS = gpsVal === 'SI' ? `SÍ (Empresa: ${empresaGps})` : 'NO';
+            let notaSeguro = seguroVal === 'SI' ? `SÍ (Aseguradora: ${empresaSeguro})` : 'NO';
+            textoFormateadoGlobal += `*🔍 COMPROBACIONES DE SEGURIDAD:*
+NOTA: El vehículo/medio cuenta con GPS: ${notaGPS} y Seguro Todo Riesgo: ${notaSeguro}.\n`;
+        }
+        textoFormateadoGlobal += `----------------------------------------
+*4. ZONA DE ATENCIÓN Y REGISTRO:*
+• *Jurisdicción:* ${zona}
+• *Personal de Atención #1:*
+  - *Cuadrante:* ${cuadranteNum}
+  - *Nombres:* ${cuadranteNombres}
+  - *Cédula(s):* ${cuadranteCedulas}
+  - *Placa Policial:* ${cuadrantePlacas}
+• *Personal de Atención #2:*
+  - *Cuadrante:* ${cuadranteNum2}
+  - *Nombres:* ${cuadranteNombres2}
+  - *Cédula(s):* ${cuadranteCedulas2}
+  - *Placa Policial:* ${cuadrantePlacas2}
+----------------------------------------
+*5. ACTIVIDADES JUDICIALES REALIZADAS:*
+${cadenaActividadesFinal}
+----------------------------------------
+✍️ *ELABORADO POR:*
+• *Funcionario:* ${elabNombre} (${elabCargo})
+• *Cédula:* ${elabCedula}
+• *Dependencia:* ${elabDependencia}`;
+        document.getElementById('outputTexto').innerText = textoFormateadoGlobal;
+        document.getElementById('resultadoSeccion').classList.remove('hidden');
+        
+        const payloadPost = {
+            consecutivo: cons, tipoNovedad: tipoNov, fecha: fecha, diaSemana: diaSem, hora: hora,
+            comuna: comuna, barrio: barrio, barrioOtro: barrioOtro, nomenclatura: nomenclatura, gpsCoords: gpsCoords,
+            elabCedula: elabCedula, elabNombre: elabNombre, elabCargo: elabCargo, elabDependencia: elabDependencia,
+            totalVictimas: listaVictimas.length, todasLasVictimasDetalle: resumenVictimasExcel,
+            victima: v1.nombre || '', tipoDoc: v1.tipoDoc || '', cedula: v1.doc || '', edad: v1.edad || '',
+            telefono: v1.tel || '', correo: v1.correo || '', tipoDelito: tDelito, subtipo: sDelito,
+            elementoEspecifico: elemEspec, modalidad: mod, denuncia: denResumen, arma: arma, 
+            elemento: elemEspec !== 'N/A' ? elemEspec : "N/A",
+            placa: placa, color: color, marca: marca, linea: linea, chasis: chasis, motor: motor, serial: serial,
+            relato: relato, seguro: seguroVal, empresaSeguro: empresaSeguro, gps: gpsVal, empresaGps: empresaGps,
+            zona: zona, 
+            cuadranteNum: cuadranteNum, cuadranteNombres: cuadranteNombres, cuadranteCedulas: cuadranteCedulas, cuadrantePlacas: cuadrantePlacas,
+            cuadranteNum2: cuadranteNum2, cuadranteNombres2: cuadranteNombres2, cuadranteCedulas2: cuadranteCedulas2, cuadrantePlacas2: cuadrantePlacas2,
+            actividades: cadenaActividadesFinal
+        };
+        let registros = JSON.parse(localStorage.getItem('novedades_records') || '[]');
+        let indexExistente = registros.findIndex(r => r.consecutivo === cons);
+        let registroObjetoLocal = Object.assign({}, payloadPost, { victimasList: listaVictimas });
+        
+        if(indexExistente !== -1) {
+            registros[indexExistente] = registroObjetoLocal;
+        } else {
+            registros.push(registroObjetoLocal);
+            let matchNum = cons.match(/^(\d+)/);
+            if(matchNum) {
+                let siguienteNum = parseInt(matchNum[1]) + 1;
+                localStorage.setItem('ultimo_consecutivo_num', siguienteNum);
+            }
+        }
+        localStorage.setItem('novedades_records', JSON.stringify(registros));
+        if (SCRIPT_URL) {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payloadPost)
+            })
+            .then(() => {
+                alert("✅ Registro guardado / actualizado con éxito en Google Sheets.");
+                if(rolActual === 'superadmin') cargarTablaAdmin();
+            })
+            .catch(error => console.error("Error enviando a Google Sheets:", error));
+        }
+        document.getElementById('resultadoSeccion').scrollIntoView({ behavior: 'smooth' });
+    }
+    function enviarWhatsApp() {
+        if(!textoFormateadoGlobal) return;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(textoFormateadoGlobal)}`, '_blank');
+    }
+    function copiarTexto() {
+        if(!textoFormateadoGlobal) return;
+        navigator.clipboard.writeText(textoFormateadoGlobal).then(() => { alert("Texto copiado al portapapeles."); });
+    }
+    function cargarTablaAdmin() {
+        const body = document.getElementById('tablaBody');
+        body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#0284c7;">⏳ Cargando historial desde Google Sheets...</td></tr>`;
+        
+        if (!SCRIPT_URL) {
+            body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#ef4444;">URL de Script no configurada.</td></tr>`;
+            return;
+        }
+        
+        fetch(SCRIPT_URL)
+            .then(res => res.json())
+            .then(data => {
+                datosRemotosSheets = data;
+                body.innerHTML = "";
+                if (!data || data.length === 0) {
+                    body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#94a3b8;">No hay registros archivados en Google Sheets.</td></tr>`;
+                    return;
+                }
+                data.slice().reverse().forEach(r => {
+                    let infoVehiculo = (r.placa && r.placa !== "N/A") ? `Placa: ${r.placa}` : "N/A";
+                    let elabTexto = r.elabNombre ? `${r.elabNombre} (${r.elabCargo})` : 'N/A';
+                    let vicTexto = r.todasLasVictimasDetalle || (r.victima ? `${r.victima} (${r.tipoDoc || ''} ${r.cedula || ''})` : 'N/A');
+                    body.innerHTML += `
+                        <tr>
+                            <td><strong>${r.consecutivo || ''}</strong></td>
+                            <td><span class="badge" style="background:#dbeafe; color:#1e40af;">${r.tipoNovedad || ''}</span></td>
+                            <td>${r.tipoDelito || ''} / ${r.subtipo || ''} ${r.elementoEspecifico && r.elementoEspecifico !== 'N/A' ? '('+r.elementoEspecifico+')' : ''}</td>
+                            <td>${r.fecha || ''} (${r.diaSemana || ''})</td>
+                            <td><strong>${r.barrio || ''}</strong> (${r.comuna || ''})</td>
+                            <td><small>${vicTexto}</small></td>
+                            <td><small>${elabTexto}</small></td>
+                            <td><small>${infoVehiculo}</small></td>
+                        </tr>
+                    `;
+                });
+            })
+            .catch(err => {
+                console.error("Error consultando Google Sheets:", err);
+                body.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#ef4444;">❌ Error al consultar Google Sheets. Verifica permisos y la Web App.</td></tr>`;
+            });
+    }
+    function exportarExcel() {
+        if (!datosRemotosSheets || datosRemotosSheets.length === 0) {
+            return alert("No hay datos cargados desde Google Sheets para exportar. Haz clic en 'Recargar Hoja'.");
+        }
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.json_to_sheet(datosRemotosSheets);
+        XLSX.utils.book_append_sheet(wb, ws, "Novedades_Sheets");
+        XLSX.writeFile(wb, `Reporte_GoogleSheets_${new Date().toISOString().split('T')[0]}.xlsx`);
+    }
+</script>
+</body>
+</html>
