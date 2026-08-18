@@ -323,19 +323,21 @@
                     <label>Hora Hecho</label>
                     <input type="time" id="horaHecho" required>
                 </div>
-                <div class="form-group">
-                    <label>Comuna</label>
-                    <select id="selectComuna" onchange="actualizarBarrios()" required>
-                        <option value="">-- Seleccione Comuna --</option>
-                        <option value="COMUNA 1">Comuna 1 (Compartir)</option>
-                        <option value="COMUNA 2">Comuna 2 (Soacha Centro)</option>
-                        <option value="COMUNA 3">Comuna 3 (Leon XIII)</option>
-                        <option value="COMUNA 4">Comuna 4 (Cazucá)</option>
-                        <option value="COMUNA 5">Comuna 5 (San Mateo)</option>
-                        <option value="COMUNA 6">Comuna 6 (Chico)</option>
-                        <option value="Sibate">Sibate</option>
-                    </select>
-                </div>
+                <!-- Modificación en la sección del Select de Comunas -->
+<div class="form-group">
+    <label>Comuna / Jurisdicción</label>
+    <select id="selectComuna" onchange="actualizarBarrios()" required>
+        <option value="">-- Seleccione Comuna / Zona --</option>
+        <option value="COMUNA 1">Comuna 1 (Compartir)</option>
+        <option value="COMUNA 2">Comuna 2 (Soacha Centro)</option>
+        <option value="COMUNA 3">Comuna 3 (Leon XIII)</option>
+        <option value="COMUNA 4">Comuna 4 (Cazucá)</option>
+        <option value="COMUNA 5">Comuna 5 (San Mateo)</option>
+        <option value="COMUNA 6">Comuna 6 (Chico)</option>
+        <option value="CAPILLA">Capilla</option>
+        <option value="SIBATE">Sibate</option>
+    </select>
+</div>
                 <div class="form-group">
                     <label>Barrio</label>
                     <select id="selectBarrio" onchange="evaluarBarrioOtro()" required>
@@ -675,18 +677,130 @@
     const diasSemanaNombres = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
     
     const BD_FUNCIONARIOS = {
-        "1074809099": { nombre: "CAMILO TORRES RINCON", cargo: "AXP", dependencia: "APOYO" },
-        "1089768976": { nombre: "JULIAN EDUARDO RAMIREZ", cargo: "PT", dependencia: "CRIMEN" },
-        "78963452": { nombre: "CAROLINA RODRIGUEZ GOMEZ", cargo: "SI", dependencia: "PATRIMONIO" }
+    "1042422169": { nombre: "BARRAZA VERA JULIO CESAR", cargo: "MY", dependencia: "PLANA MAYOR" },
+    "7601283": { nombre: "BOLIVAR OSORIO ALEXANDER ISMAEL", cargo: "CT", dependencia: "PLANA MAYOR" },
+    "80020869": { nombre: "RODRIGUEZ TORRES JHORMAN EDUARDO", cargo: "SC", dependencia: "PLANA MAYOR" },
+    "12180382": { nombre: "CHILITO BERMEO CARLOS ALBERTO", cargo: "SI", dependencia: "PLANA MAYOR" },
+    "31436212": { nombre: "ALZATE MEJIA CLAUDIA VIVIANA", cargo: "SI", dependencia: "PLANA MAYOR" },
+    "1010124170": { nombre: "CLAROS ZUÑIGA FRANCY LORENA", cargo: "PT", dependencia: "PLANA MAYOR" },
+    "1065653593": { nombre: "CLAVIJO ARDILA HEINER HUMBERTO", cargo: "PT", dependencia: "PLANA MAYOR" },
+    "1010103996": { nombre: "DURAN REBOLLEDO SAUL DAVID", cargo: "PT", dependencia: "PLANA MAYOR" },
+    "1032505565": { nombre: "MORA GALARAGA CAROLINA", cargo: "PT", dependencia: "PLANA MAYOR" },
+    "1107510131": { nombre: "NARVAEZ HERMOSA LORENA KATHERYNNE", cargo: "PT", dependencia: "FISCALIAS" },
+    "1094285935": { nombre: "PORTILLA LIZCANO DARLYN YARISMAR", cargo: "PT", dependencia: "PLANA MAYOR" },
+    "1065376076": { nombre: "SOTTER  MERCADO MOISES  ELIAS", cargo: "PT", dependencia: "PLANA MAYOR" },
+    "80727679": { nombre: "AHUMADA VEGA GONZALO ANDRES", cargo: "IJ", dependencia: "CRIMINALISTICA" },
+    "79813027": { nombre: "ARIAS RODRIGUEZ JOHNY RODOLFO", cargo: "IJ", dependencia: "CRIMINALISTICA" },
+    "1013598793": { nombre: "GRACIA AVILA JAIRO FERNANDO", cargo: "IT", dependencia: "CRIMINALISTICA" },
+    "1024477643": { nombre: "REYES RUEDA JHONATAN HARBYN", cargo: "IT", dependencia: "CRIMINALISTICA" },
+    "1030603553": { nombre: "LOPEZ CARDONA YAIR EISENHOWER", cargo: "IT", dependencia: "CRIMINALISTICA" },
+    "1023898559": { nombre: "MARTINEZ CASTAÑEDA OMAR JULIAN", cargo: "IT", dependencia: "CRIMINALISTICA" },
+    "1022940208": { nombre: "TORRES GONZALEZ CRISTIAN CAMILO", cargo: "IT", dependencia: "CRIMINALISTICA" },
+    "1074132241": { nombre: "SARMIENTO GUTIERREZ WILLIAM FERNEY", cargo: "IT", dependencia: "CRIMINALISTICA" },
+    "26607743": { nombre: "IBAÑEZ BAUTISTA MARITZA", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "1063140312": { nombre: "SIBAJA CORREA DAIWIN RAMIRO", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "80166312": { nombre: "QUIROGA FRANKLIN", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "1105670689": { nombre: "MONTEALEGRE OLAYA JAMER FRANCISCO", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "1053337214": { nombre: "ORTEGA CORTES EDWIN REINALDO", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "1018459168": { nombre: "PARRA GIL JAIME SEBASTIAN", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "1055313299": { nombre: "LAMPREA BARRIOS JUAN CARLOS", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "1053337214": { nombre: "CRUZ BONILLA JHONATAN", cargo: "SI", dependencia: "CRIMINALISTICA" },
+    "1074959302": { nombre: "CIFUENTES HOYOS GENID JOHANNA", cargo: "PT", dependencia: "CRIMINALISTICA" },
+    "1001874498": { nombre: "OROZCO MORALES ELAIZA SHADAY", cargo: "PT", dependencia: "CRIMINALISTICA" },
+    "1073326926": { nombre: "RINCON PARRA KIMBERLY", cargo: "PT", dependencia: "CRIMINALISTICA" },
+    "1121825834": { nombre: "MURILLO ALONSO IVAN FERNANDO", cargo: "IT", dependencia: "URI" },
+    "1019038209": { nombre: "CARRILLO PARADA DIEGO FERNANDO", cargo: "IT", dependencia: "URI" },
+    "1054561791": { nombre: "MOSQUERA NUÑEZ JORGE ESNEYDER", cargo: "SI", dependencia: "URI" },
+    "1006009688": { nombre: "BERMUDEZ SALDARRIAGA JUAN ESTEBAN", cargo: "PT", dependencia: "URI" },
+    "1007831162": { nombre: "DAVILA TREJOS JONATHAN DARIO", cargo: "PT", dependencia: "URI" },
+    "1110457318": { nombre: "RONCANCIO RODRIGUEZ ROMMY STEEL", cargo: "TE", dependencia: "PATRIMONIO" },
+    "1069727566": { nombre: "AVILAN VENEGAS DANIEL FERNANDO", cargo: "IT", dependencia: "PATRIMONIO" },
+    "8865517": { nombre: "HERNANDEZ MERCADO JULIO CESAR", cargo: "SI", dependencia: "PATRIMONIO" },
+    "80758643": { nombre: "MOSQUERA ARDILA MIGUEL ANGEL", cargo: "SI", dependencia: "PATRIMONIO" },
+    "1110502262": { nombre: "VIÑA CRUZ BRIAN ALEXIS", cargo: "SI", dependencia: "PATRIMONIO" },
+    "1193038589": { nombre: "ALVAREZ CARDENAS DAVISON", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1007202374": { nombre: "CARDENAS FERNANDEZ ANGIE DANIELA", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1117552641": { nombre: "HERRERA LOPEZ YONNY ALEXANDER", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1017255541": { nombre: "LARA ESTRADA LILIANA", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1075313254": { nombre: "OVIEDO RAMIREZ JUAN SEBASTIAN", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1039701828": { nombre: "OROZCO GUZMAN WALBERTO ORLANDO", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1005910835": { nombre: "PEÑA ALVAREZ JUAN ESTEBAN", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1234189966": { nombre: "RENGIFO CAICEDO ANDRES FELIPE", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1073713774": { nombre: "RAMIREZ TORRES DANIELA ALEJANDRA", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1081702523": { nombre: "RODRIGUEZ PEÑA MIGUEL ANGEL", cargo: "PT", dependencia: "PATRIMONIO" },
+    "1099214925": { nombre: "PINEDA RIVAS EDUARD ESTEBAN", cargo: "CT", dependencia: "HOMICIDIOS" },
+    "80218725": { nombre: "RAMIREZ ROJAS ADRIAN ALEXANDER", cargo: "IJ", dependencia: "HOMICIDIOS" },
+    "16078111": { nombre: "MARIN JARAMILLO JORGE ENRIQUE", cargo: "IT", dependencia: "HOMICIDIOS" },
+    "80763987": { nombre: "MOSCOSO ESTRADA JULIO EDUARDO", cargo: "IT", dependencia: "HOMICIDIOS" },
+    "1010176755": { nombre: "SANTOS MARTINEZ ANDRES FELIPE", cargo: "IT", dependencia: "HOMICIDIOS" },
+    "1098610203": { nombre: "ORTIZ MENDOZA RUBEN ARIEL", cargo: "IT", dependencia: "HOMICIDIOS" },
+    "1049024663": { nombre: "RONDON MORALES OMAR YESID", cargo: "SI", dependencia: "HOMICIDIOS" },
+    "7321155": { nombre: "MENDIETA OSCAR JAVIER", cargo: "SI", dependencia: "HOMICIDIOS" },
+    "1041898335": { nombre: "MANJARRES SANJUAN MARCOS", cargo: "SI", dependencia: "HOMICIDIOS" },
+    "1081411549": { nombre: "CLAVIJO ZUÑIGA VICTOR EDUARDO", cargo: "SI", dependencia: "HOMICIDIOS" },
+    "1105692015": { nombre: "BARRIOS LIZCANO JULIAN GUILLERMO", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1065002622": { nombre: "BEDOYA SALGADO YOGER DE JESUS", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1007108245": { nombre: "CUERVO SANCHEZ DAVID ALEXANDER", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1060270034": { nombre: "GUARIN BERMUDEZ OSCAR IVAN", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1000888371": { nombre: "HIGUITA SANTIAGO", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1104013665": { nombre: "MANJARRES CARPIO KEVIN JOSE", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1002344624": { nombre: "REDONDO DIAZ BRADY RAFAEL", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1003263657": { nombre: "SALAS OVIEDO JHON CARLOS", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1063075963": { nombre: "SALGADO CASTILLO MANUEL VICENTE", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1073719848": { nombre: "VARGAS ESPINOSA JONATAN ESTIVEN", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "1024574079": { nombre: "VELANDIA GARCIA FRANCY LIZETH", cargo: "PT", dependencia: "HOMICIDIOS" },
+    "92544290": { nombre: "CORREA ARRIETA BORIS DAVID", cargo: "IJ", dependencia: "CRIMEN" },
+    "81715119": { nombre: "SUAREZ MOYA JHON JAIRO", cargo: "SI", dependencia: "CRIMEN" },
+    "1022925087": { nombre: "MURCIA RODRIGUEZ JAIRO ALONSO", cargo: "SI", dependencia: "CRIMEN" },
+    "1070326327": { nombre: "BALANTA OSCAR ANDRES", cargo: "SI", dependencia: "CRIMEN" },
+    "1010185359": { nombre: "CASARRUBIA PACHECO KAREN MARIA", cargo: "SI", dependencia: "CRIMEN" },
+    "1038137740": { nombre: "BRACAMONTE PEREZ DANIEL EDUARDO", cargo: "PT", dependencia: "CRIMEN" },
+    "1193225579": { nombre: "CANTILLO CAMARGO ALBERTO JOSE", cargo: "PT", dependencia: "CRIMEN" },
+    "1007183656": { nombre: "CASAS GOMEZ STIVENSON ANDRES", cargo: "PT", dependencia: "CRIMEN" },
+    "1193215461": { nombre: "CORONADO LOPEZ APOLINAR ANTONIO", cargo: "PT", dependencia: "CRIMEN" },
+    "1007233961": { nombre: "DELGADO RESTREPO SANTIAGO", cargo: "PT", dependencia: "CRIMEN" },
+    "1067590913": { nombre: "FIGUEROA CAMACHO MICHEL DAYANA", cargo: "PT", dependencia: "CRIMEN" },
+    "1127953122": { nombre: "IBARRA BENJUMEA CARLOS ANDRES", cargo: "PT", dependencia: "CRIMEN" },
+    "1107529795": { nombre: "LOPEZ BALCAZAR MAIRA ALEJANDRA", cargo: "PT", dependencia: "CRIMEN" },
+    "1061373464": { nombre: "OCAMPO VILLA DEIBY ESTID", cargo: "PT", dependencia: "CRIMEN" },
+    "1007183256": { nombre: "RAMON HERAZO CAMILO ANDRES", cargo: "PT", dependencia: "CRIMEN" },
+    "1103115172": { nombre: "SOTO MONTES LUIS DAVID", cargo: "PT", dependencia: "CRIMEN" },
+    "1022435850": { nombre: "VILLERO BAZAN ALEXANDER", cargo: "PT", dependencia: "CRIMEN" },
+    "73189091": { nombre: "PEREZ MATTOS RICHARD IVAN", cargo: "IJ", dependencia: "FISCALIAS" },
+    "11225776": { nombre: "VELA VALENCIA JOSE ALEXANDER", cargo: "SI", dependencia: "GRAIC" },
+    "1052392301": { nombre: "GONZALEZ BRICEÑO LAURA", cargo: "SI", dependencia: "URI" },
+    "1012365242": { nombre: "LOPEZ GUZMAN CESAR ALEJANDRO", cargo: "SI", dependencia: "FISCALIAS" },
+    "1024539926": { nombre: "LICED JOHANA ROJAS AVILES", cargo: "SI", dependencia: "PLANA MAYOR" },
+    "1005472921": { nombre: "CAPACHERO BATISTA LEYDIS MARCELA", cargo: "PT", dependencia: "FISCALIAS" },
+    "1007889207": { nombre: "DURANGO JIMENEZ HERNAN DAVID", cargo: "PT", dependencia: "FISCALIAS" },
+    "1053873223": { nombre: "ISAZA CLAVIJO JUAN CARLOS", cargo: "PT", dependencia: "FISCALIAS" },
+    "1073718831": { nombre: "MARTINEZ  HERRERA DAYANNA MARIELA", cargo: "PT", dependencia: "PLANA MAYOR" },
+    "1006592643": { nombre: "MURILLO HURTADO DIANA MARCELA", cargo: "PT", dependencia: "FISCALIAS" },
+    "1073829715": { nombre: "PAEZ LLORENTE JOSE FARIT", cargo: "PT", dependencia: "FISCALIAS" },
+    "1193110411": { nombre: "RUGELES ROSARIO HERNAN DAVID", cargo: "PT", dependencia: "FISCALIAS" },
+    "1115092358": { nombre: "VELEZ CIFUENTES SARA CAMILA", cargo: "PT", dependencia: "FISCALIAS" },
+    "86086662": { nombre: "GALEANO MADRIGAL DIEGO", cargo: "IJ", dependencia: "GRAIC" },
+    "1059709209": { nombre: "ALARCON GARCIA MARIA DIOSELINA", cargo: "PT", dependencia: "GRAIC" },
+    "1047446388": { nombre: "DIAZ ORTIZ DORIS", cargo: "PT", dependencia: "GRAIC" },
+    "1214739926": { nombre: "GIRALDO CESPEDES JULIAN", cargo: "PT", dependencia: "GRAIC" },
+    "1003235547": { nombre: "MEJIA MOLINA ZLATNA MARCELA", cargo: "PT", dependencia: "GRAIC" },
+    "1109386522": { nombre: "PARRA OBANDO JENNY CAROLINA", cargo: "PT", dependencia: "GRAIC" },
+    "1090228033": { nombre: "PEÑA BORJA JESUS ALEXIS", cargo: "PT", dependencia: "GRAIC" },
+    "1074809099": { nombre: "TORRES CAMILO", cargo: "AP", dependencia: "GRAIC" },
+    "52542361": { nombre: "PEREZ SANCHEZ JENNY ANDREA", cargo: "NU", dependencia: "GRAIC" },
+    "1006729476": { nombre: "MENDOZA CUBIDES ANDRES CAMILO", cargo: "PT", dependencia: "FISCALIAS" },
+    "1097333131": { nombre: "REYES REYES CRISTELL IVETH", cargo: "PT", dependencia: "FISCALIAS" },
     };
     const mapeoComunasBarrios = {
-        'COMUNA 1': ['Compartir', 'Hogares de Soacha', 'Ciudad Latina', 'Quintanar', 'Parque Capital', 'Maiporé', 'Llanos de Soacha'],
-        'COMUNA 2': ['Soacha Centro', 'El Sol', 'Las Villas', 'Américas', 'Satélite', 'Quintas de la Laguna', 'Tejares'],
-        'COMUNA 3': ['La Despensa', 'León XIII', 'Ciudad Verde', 'Los Olivos', 'La María', 'Potrero Grande'],
-        'COMUNA 4': ['Cazucá', 'Ciudadela Sucre', 'El Boso', 'La Isla', 'Julio Rincón', 'Los Pinos'],
-        'COMUNA 5': ['San Mateo', 'Quintania', 'Casas de San Mateo', 'Rincón de San Mateo', 'Club Tibanica'],
-        'COMUNA 6': ['San Humberto', 'Camilo Torres', 'Chicó', 'El Danubio', 'Galán', 'La Cristalina']
-    };
+    'COMUNA 1': ['Compartir', 'Hogares de Soacha', 'Ciudad Latina', 'Quintanar', 'Parque Capital', 'Maiporé', 'Llanos de Soacha'],
+    'COMUNA 2': ['Soacha Centro', 'El Sol', 'Las Villas', 'Américas', 'Satélite', 'Quintas de la Laguna', 'Tejares'],
+    'COMUNA 3': ['La Despensa', 'León XIII', 'Ciudad Verde', 'Los Olivos', 'La María', 'Potrero Grande'],
+    'COMUNA 4': ['Cazucá', 'Ciudadela Sucre', 'El Boso', 'La Isla', 'Julio Rincón', 'Los Pinos'],
+    'COMUNA 5': ['San Mateo', 'Quintania', 'Casas de San Mateo', 'Rincón de San Mateo', 'Club Tibanica'],
+    'COMUNA 6': ['San Humberto', 'Camilo Torres', 'Chicó', 'El Danubio', 'Galán', 'La Cristalina'],
+    'CAPILLA': ['Capilla Principal', 'Sector Capilla'],
+    'SIBATE': ['Sibate Centro', 'Barrios Periféricos Sibate']
+};
     const mapeoSubtipos = {
         'HURTO': ['MOTO', 'VEHÍCULO', 'BICICLETA', 'RESIDENCIA', 'COMERCIO', 'PERSONA'],
         'HOMICIDIO': ['SICARIATO', 'RIÑA', 'ATRACO', 'SITUACIÓN EN DESARROLLO'],
